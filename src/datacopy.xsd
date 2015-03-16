@@ -11,7 +11,7 @@
         
         todo: checksums, file selector patterns, batch window, data size limits (total size, attachement limit) 
 	
-	Elements
+    Elements
     =========
 	<DataCopy> 
             This is the **Document Root Element**. It describes a job for copying data 
@@ -65,7 +65,7 @@
             
         
 
-	Abstract Elements
+    Abstract Elements
     =================
         The schema's abstract elements serve as extension points. This allows
         custom implementations of <abstractDataSource>, <abstractDataSink>, 
