@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataCopy xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xmlns='http://www.datacopy.common/DataCopy'
+          xsi:schemaLocation='http://www.datacopy.common/DataCopy datacopyV1.xsd'>
+        
+    <common>      
+        <anyCredentials id="cred1"/>
+        
+        <urlDataSource id="urlsrc1">
+            <description><![CDATA[
+                A common url data source that can be referenced multiple times
+                from within copy elements using  <idref local="urlsrc1"/> ]]>
+            </description>
+            <urlDataEndpoint>
+                <dataUrl url="http://source.data.org"/>
+            </urlDataEndpoint>
+        </urlDataSource>
+        
+        <urlDataSource id="urlsink1">
+            <description><![CDATA[
+                A common url data sink that can be referenced multiple times
+                from within copy elements using <idref local="urlsink1"/>]]>
+            </description>
+            <urlDataEndpoint>
+                <dataUrl url="http://sink.data.org"/>
+            </urlDataEndpoint>
+        </urlDataSource>
+        
+        <inlineDataSource id="inlineData1">
+            <description>
+                Nested string in cdata element is the data source. 
+            </description>
+            <cdata>
+                <![CDATA[
+                <anotherXMLDoc>
+                   <data>
+                     <element1>hello world</element1> 
+                     <element1>data source</element1> 
+                   </data>
+                </anotherXMLDoc>
+                ]]>
+            </cdata>
+        </inlineDataSource>
+        
+        <urlProperties id="propid1"/> 
+    </common>
+
+   
+    <DataCopyRequirements>
+        <description>
+            After the description, define global copy requirements 
+            such as scheduling, i.e. requirements that apply to the 
+            whole data copy activity. 
+        </description>
+    </DataCopyRequirements>
+
+         
+    <copy>
+        <description>
+            The most minimal copy element;
+            it is a copy skeleton that can be populated later. 
+        </description>
+        <source/>
+        <sink/>
+    </copy>
+
+
+    <copy>
+        <description>
+            A sample copy element that references common data sources and sinks. 
+            Elements are referenced allowing reuse rather than  inlining definitions. 
+            The source and sink idref values must reference an abstractDataSource 
+            and an abstractDataSink respectively. Note, the type checking 
+            of referenced elements is not enforced by the xml schema and so 
+            must be checked by the implementing system (the idref must refer 
+            to a DataSource implementation). 
+        </description>
+        <source>
+            <idref local="urlsrc1"/>
+        </source>
+        <sink>
+            <idref local="urlsink1"/>
+        </sink>
+    </copy>
+
+
+    <copy>
+        <description>Copy inline XML doc to sink</description>
+        <source>
+            <idref local="inlineData1" />
+        </source>
+        <sink>
+            <idref local="urlsink1"/>
+        </sink>
+    </copy>
+
+        
+    <copy>
+        <description>
+            In this example the source and sink are defined inline rather than
+            using element references. 
+        </description>
+        <source>
+            <urlDataSource>
+                <urlDataEndpoint>
+                    <dataUrl url="ftp://example1.com/the/data/source"/>
+                    <anyCredentials>
+                        <body>
+                                <!-- credentials body here -->
+                        </body>
+                    </anyCredentials>
+                </urlDataEndpoint>
+            </urlDataSource>
+        </source>          
+        <sink>
+            <!--<inlineSink>-->
+            <urlDataSink>
+                <urlDataEndpoint>
+                    <dataUrl url="ftp://example2.com/the/data/sink"/>
+                    <anyCredentials>
+                        <body>
+                                <!-- credentials body here -->
+                        </body>
+                    </anyCredentials>
+                </urlDataEndpoint>
+                <urlDataEndpoint>
+                    <dataUrl url="http://www.example3.com/the/data/sink/alt/location">
+                        <urlProperties/>
+                    </dataUrl>
+                    <anyCredentials>
+                        <idref local="cred1"/>
+                    </anyCredentials>
+                </urlDataEndpoint>
+            </urlDataSink>
+            <!--</inlineSink>-->
+        </sink>
+    </copy>
+
+
+
+</DataCopy>

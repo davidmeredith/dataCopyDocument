@@ -1,0 +1,651 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.datacopy.common/DataCopy"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            xmlns="http://www.datacopy.common/DataCopy"
+            xmlns:dmi="http://www.datacopy.common/DataCopy">
+
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[
+	Data Copy Document  
+	Authors: David Meredith  
+        
+        todo: checksums, file selector patterns, batch window, data size limits (total size, attachement limit) 
+	
+	Elements
+    =========
+	<DataCopy> 
+            This is the **Document Root Element**. It describes a job for copying data 
+            from one or more data sources to one or more data sinks. 
+            It encapsulates all information necessary to perform the copy, 
+            including data source/sink locations, serialized credentials, 
+            transfer properties and scheduling properties. 
+            <DataCopy> nests the following elements: 
+             - one <common> element (used to define shared/resused elements such as credentials, common data sources and sinks) 
+             - one or more <copy> elements 
+             - one <DataCopyRequirements> element  
+
+    <common>
+            An element bag for locating common/shared elements that can be 
+            subsequently referenced from within <copy> elements (the common elements can be 
+            optionally referenced using the <idref/> element rather than repeating 
+            inline defintions - see 'Element References' section below). 
+            For increased document clarity, shared elements should be typically 
+            defined within <common/>. 
+        
+	<DataCopyRequirements>
+            Requirements that have context over all the <copy> operations. 
+            
+	<copy> 
+            A copy element defines a single copy operation between a data 
+            source and a sink. <copy> nests one <source> and one <sink>. 
+
+	<source> and <sink> 
+            The source identifies the location of the original data to be 
+            copied. It nests either an <idref local="aSourceElementId"> 
+            element for referencing an existing <source>, or an 
+            <inlineSource> element for defining the source inline. An <inlineSource> 
+            nests an implementation of <abstractDataSource>.
+
+            The <sink> identifies the target location of the recieving data.
+            It nests either an <idref local="aSinkElementId"> 
+            element for referencing an existing <sink>, or an 
+            <inlineSink> element for defining the sink inline. An <inlineSink> 
+            nests an implementation of <abstractDataSink>.
+
+            <abstractDataSource> and <abstractDataSink> provide extension 
+            points so that custom data sources and sinks can be defined in 
+            extending schemas. 
+
+        <urlDataSource>
+        <urlDataSink> 
+        
+        <inlineDataSource>
+            A generic DataSource implementation for nesting content 
+            inline as the source data (e.g. XML documents, text files).
+            
+        
+
+	Abstract Elements
+    =================
+        The schema's abstract elements serve as extension points. This allows
+        custom implementations of <abstractDataSource>, <abstractDataSink>, 
+        <abstractCredentials> and <abstractProperties>. 
+        To do this, import this schema into thrid party (extending) schema 
+        documents using the following import (you may need to modify the value of
+        the schemaLocation attribute if the datacopy.xsd is in a different location): 
+        	
+	    <xs:import namespace="http://www.datacopy.common/DataCopy" schemaLocation="datacopy.xsd"/>   
+	
+            
+    Element References
+    ==================
+	References to common elements are supported using the 'local' attribute. 
+    In doing this, common elements can be referenced using the <idref/> element 
+    rather than repeating inline defintions. 
+	For increased document clarity, shared elements should be typically 
+	defined within <common/>. 
+
+	Inner element definitions can also be used to define documents with a 
+        fully inline/nested structure. Inner elements are anonymous; they do 
+        not define the 'local' identifier and cannot be referenced using <idref/>.
+        
+    ]]>
+        </xsd:documentation>
+    </xsd:annotation>
+
+
+    <xsd:complexType name="abstractIdentifiedType" abstract="true">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+	The unique identifier for an element. The scope of the identifier
+	is the enclosing document.
+			]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[
+	The unique identifier for an element.
+				]]>
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+   
+   <xsd:element name="idref">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+	The id of another element in this document.
+	While a regular 'value' element could instead be used for the
+	same effect, using idref in this case allows validation of local
+	element ids by the XML parser, and name completion by supporting tools.
+			]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <!-- If we wanted to reference element IDs in other docs then 
+                    instead of using local attribute of type idref, we could simply 
+                    use a string as below -->
+                    <!--<xsd:attribute name="external" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+    The id or name of the referenced element. Using an xsd:string rather than 
+    xsd:IDREF allows the references to point to elements in other accompanying 
+    documents for example. This could be useful if the document is large and 
+    is split into muliple docs. 
+                        ]]>
+                        </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>-->
+                        
+                    <xsd:attribute name="local" type="xsd:IDREF" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+	The name of the referenced element. This must be a unique xsd:IDREF value so that it
+	can be checked by the XML parser. This is the preferred technique 
+	for referencing elements within the same XML file (rather than providing 
+	an alternative xsd:string as the element reference).
+							]]>
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <!--<xsd:attribute name="type" type="string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+	The type of the referenced element - could be useful for XPath queries. 
+        ]]>
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>-->
+                </xsd:restriction>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+
+
+    <xsd:element name="description">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+	Contains informative text describing the purpose of the enclosing element.
+	Used primarily for user documentation of XML definitions.
+			]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType mixed="true">
+            <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:element name="DataCopy">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[
+    This is the intended (Document) Root element. It contains 
+    a list of <copy/> elements for the copying of data 
+    between different sources and sinks.
+            ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dmi:description" minOccurs="0"/>
+                <xsd:element ref="dmi:common" minOccurs="0"/>
+                <xsd:element ref="dmi:DataCopyRequirements" minOccurs="0"/>
+                <!-- copy minOccurs should be zero so that downstream processes can 
+                     add the Copy elements whilst maintaining document validity. -->    
+                <xsd:element ref="dmi:copy" minOccurs="0" maxOccurs="unbounded"/>              
+                    
+                <!-- 
+                TODO - We could define the copyGroup for further structuring of the 
+                document, e.g. to define distinct 'atomic' copy units so that
+                implementing systems are free to process different groups as units. 
+                -->
+                <!--<xsd:element name="copyGroup" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element ref="copy" minOccurs="0" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>-->
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:element name="common" type="dmi:commonType"/>
+    <xsd:element name="DataCopyRequirements" type="dmi:DataCopyRequirementsType"/>            
+
+
+    <xsd:element name="copy" type="dmi:copyType"/>
+
+
+    <xsd:element name="source">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ The source element acts as a generic container  
+                for wrapping either a) an abstractDataSource implementation or  
+                b) an <idref/> element which references an abstractDataSource implementation.  
+                It is not intended to be a common (referenced) element.  
+                If the <idref> is used, it must reference an element that defines the 'abstractDataSource'
+                substitutionGroup (this must be checked by the consuming system). ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dmi:description" minOccurs="0"/>
+                <!-- TODO - Not sure the minOccurs should be 0. This allows the definition 
+                of a skeleton source element that cannot actually be enacted. In this 
+                scenario, the consuming system would have to ignore this copy 
+                rather than throw error. 
+                On the other hand, facilitating a skeleton copy element may be 
+                useful for creating a doc that is valid and can be 
+                populated in subsequent processing? -->
+                <xsd:choice minOccurs="0">
+                    <xsd:element ref="dmi:idref"/>
+                    <!--<xsd:element ref="dmi:inlineSource"/>-->
+                    <xsd:element ref="dmi:abstractDataSource"/>
+                </xsd:choice>
+                <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+                         processContents="lax"/>
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+
+<!--    <xsd:element name="inlineSource">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dmi:abstractDataSource"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+                    -->
+
+    <xsd:element name="sink">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ The sink element acts as a generic container 
+                for wrapping either a) an abstractDataSink implementation or  
+                b) an <idref/> element that references an abstractDataSink implementation.  
+                It is not intended to be a common (referenced) element.  
+                If the <idref> is used it must reference an element that defines the 'abstractDataSink'
+                substitutionGroup (this must be checked by the consuming system).]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dmi:description" minOccurs="0"/>
+                <!-- TODO - Not sure the minOccurs should be 0. This allows the definition 
+                    of a skeleton sink element that cannot actually be enacted. In this 
+                    scenario, the consuming system would have to ignore this copy 
+                    rather than throw error. 
+                    On the other hand, facilitating a skeleton copy element may be 
+                    useful for creating a doc that is valid and can be 
+                    populated in subsequent processing? -->
+                <xsd:choice minOccurs="0">
+                    <xsd:element ref="dmi:idref"/>
+                    <!--<xsd:element ref="dmi:inlineSink"/>-->
+                    <xsd:element ref="dmi:abstractDataSink"/>
+                </xsd:choice>
+                <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+                         processContents="lax"/>
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+<!--    <xsd:element name="inlineSink">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dmi:abstractDataSink"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>-->
+
+    <xsd:element name="abstractCommon" abstract="true">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Used to define concrete element 
+                implementations for shared/common elements that can be 
+                re-used by elements references. ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <!--
+        Explicitly separate the abstract DataSource and DataSink elements 
+        because we will want to provide distinctly different implementations 
+        and because we want to prevent any ambiguity between a source and sink !  
+    -->
+    <xsd:element name="abstractDataSink" abstract="true" substitutionGroup="dmi:abstractCommon">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Third party schema can implement this element using the 
+                'abstractDataSink' substitutionGroup to provide custom data sink implementations
+                (an sqlInsertIntoDataSink for example). ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="abstractDataSource" abstract="true" substitutionGroup="dmi:abstractCommon">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Third party schemas can implement this element via the 
+                'abstractDataSource' substitutionGroup to provide custom data source implementations 
+                (an sqlSelectDataSource for example). ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="abstractCredentials" abstract="true" substitutionGroup="dmi:abstractCommon">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Third party schema can implement this element via the 
+                'abstractCredentials' substitutionGroup to provide custom Credentials.  
+                These can be used to describe the security related information elements 
+                that are necessary to invoke a data copy. ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="abstractProperties" abstract="true" substitutionGroup="dmi:abstractCommon">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Third party schemas can implement this element via the 
+                'abstractProperties' substitutionGroup to provide custom Properties.  
+                Properties are used to describe custom information that may be 
+                necessary to invoke a data copy. ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+
+
+    <xsd:element name="inlineDataSource" substitutionGroup="dmi:abstractDataSource">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[The xmlDataSource is a generic DataSource 
+                implementation for inserting XML documents as the 
+                source data.]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="dmi:abstractIdentifiedType">
+                    <xsd:sequence>
+                        <xsd:element ref="dmi:description" minOccurs="0"/>
+                        <xsd:element ref="dmi:cdata" maxOccurs="unbounded"/>
+                        <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+                                 processContents="lax"/>
+                    </xsd:sequence>
+                    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>  
+    </xsd:element>
+
+    <xsd:element name="cdata" type="xsd:string"/> 
+        
+    <!--  When <simpleContent> is used, the base type must be a complexType whose content type is simple -->
+    
+
+    <xsd:element name="attachmentName" type="xsd:string"/>
+
+    <xsd:element name="urlDataSource" substitutionGroup="dmi:abstractDataSource">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[This element describes for each data transfer protocol
+                (using the normalised values defined for SupportedProtocol)
+                the specific information that must be used to access remote source data.]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="dmi:dataLocationsType"> </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="urlDataSink" substitutionGroup="dmi:abstractDataSink">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[This element describes for each data transfer protocol
+                (using the normalised values defined for SupportedProtocol)
+                the specific information that must be used to access the remote sink.]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="dmi:dataLocationsType"/>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+
+
+
+
+    <xsd:element name="anyCredentials" substitutionGroup="dmi:abstractCredentials">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[  This element does not define any normative structure 
+                so that dmi common can be orthogonally composed with 
+                security infrastructures.]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="dmi:abstractIdentifiedType">
+                    <xsd:choice minOccurs="0">
+                        <xsd:element ref="dmi:idref"/>
+                        <xsd:element ref="dmi:body"/>
+                    </xsd:choice>
+                    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:element name="body">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dmi:description" minOccurs="0"/>
+                <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:element name="urlProperties" substitutionGroup="dmi:abstractProperties">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ TODO - this impl will be a generic prop set (collection)
+                allowing you specify custom key/val pairs. Still todo. ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="dmi:abstractIdentifiedType">
+                    <xsd:choice minOccurs="0">
+                        <xsd:element ref="dmi:idref"/>
+                        <xsd:element ref="dmi:body"/>
+                    </xsd:choice>
+                    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:complexType name="commonType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[A generic container for aggregating commonly 
+                used elements that are substitutes of the 'abstractCommon' substitution group. 
+                These commonly shared elements can be nested here and  
+                subsequently referred to from within other elements to 
+                reduce repetition. ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element ref="dmi:description" minOccurs="0" maxOccurs="1"/>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" ref="dmi:abstractCommon"/>
+            <!-- See ***UPC Violation Note*** -->
+            <xsd:element ref="dmi:extension" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="DataCopyRequirementsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Used to define global requirements for the whole data copy activity. 
+                Clients may specify constraints such as start and end time (e.g. when resource
+                reservations have been made).]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element ref="dmi:description" minOccurs="0"/>
+            <xsd:element name="startNotBefore" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="endNoLaterThan" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="stayAliveTime" type="xsd:unsignedInt" minOccurs="0"/>
+            <xsd:element name="maxAttempts" type="xsd:unsignedInt" minOccurs="0"/>
+            <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="copyType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Used as a container for wrapping 
+                the data Source, Sink and CopyRequirements elements. The source 
+                defines the original source for the copy operation while 
+                the sink defines the target for the data copy. ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="dmi:abstractIdentifiedType">
+                <xsd:sequence>
+                    <xsd:element ref="dmi:description" minOccurs="0"/>
+                    <xsd:element ref="dmi:source"/>
+                    <xsd:element ref="dmi:sink"/>
+                    <!--TODO  <xsd:element ref="CopyRequirements" minOccurs="0" maxOccurs="1"/>-->
+                </xsd:sequence>
+                <xsd:anyAttribute namespace="##other"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="dataLocationsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[Used as a container for aggregating one or more
+                UrlDataEndpoint elements. This means the client can specify alternative locations 
+                of the same data (replicas) and allows the consuming system to attempt different 
+                endpoints if others are unavailable or if a particular protocol is not 
+                supported by the consuming system.  ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="dmi:abstractIdentifiedType">
+                <xsd:sequence>
+                    <xsd:element ref="dmi:description" minOccurs="0"/>
+                    <!-- 
+                        The unbounded allows us to define alternative 
+                        locations of the same data (replicas). 
+                        TODO - Decide minOccurs: The minOccurs 
+                        could be changed to zero to allow downstream 
+                        processes to later add the UrlDataEndpoint(s) 
+                        whilst maintaining document validity. However, 
+                        this would allow empty/skeleton urlDataEndpoint 
+                        elements to be defined? 
+                    -->
+                    <xsd:element ref="dmi:urlDataEndpoint"  maxOccurs="unbounded"/>
+                    <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+                             processContents="lax"/>
+                </xsd:sequence>
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="urlDataEndpoint" type="dmi:urlDataEndpointType" />
+
+
+    <xsd:complexType name="urlDataEndpointType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ This element describes the specific information 
+                that is required to access the data at its URL.]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="dmi:abstractIdentifiedType">
+                <xsd:sequence>
+                    <!-- Inline DataUrl definition. This could be globalized if deemed useful. -->
+                    <xsd:element ref="dmi:dataUrl"/>
+                    <xsd:element ref="dmi:abstractCredentials" minOccurs="0"/>
+                    <!-- See ***UPC Violation Note*** -->
+                    <!--<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other"
+                        processContents="lax"/>-->
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+
+    <xsd:element name="dataUrl">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="protocolUri" type="xsd:anyURI" minOccurs="0"/>
+                <xsd:element ref="dmi:abstractProperties" minOccurs="0"/>
+            </xsd:sequence>
+                            <!-- Specify the url as an attribute for a minimal element definition. 
+                                This attribute could be refractored into an element in the 
+                                sequence above if this would be more useful. -->
+            <xsd:attribute name="url" type="xsd:anyURI"/>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="extension">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other"
+                         processContents="lax"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+
+
+    <!--
+        ***UPC Violation Note (Unique Particle Constraint)*** 
+        Having a sibling <xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other"/> 
+        at this nesting level can cause UPC violation when extending this schema. 
+        This can occur because the abstract elements located at this level 
+        (e.g. in the above <choice/>) can be implemented in another namespace which would 
+        mean that these elements (implementations) could ALSO be matched 
+        with the <xsd:any namespace="##other"/> (i.e. the XML parser could potentially 
+        match with EITHER the Abstract element OR the <xsd:any ##other which is not allowed).
+        Therefore, having the <extension/> element avoids this problem because 
+        it unambigously separates the elements so the parser can uniquly match elements 
+        with the correct schema particle. 
+    -->
+
+
+
+</xsd:schema>

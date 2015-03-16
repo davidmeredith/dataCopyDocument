@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataCopy
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns='http://www.datacopy.common/DataCopy'
+    xmlns:ext='http://www.datacopy.common/extending/example'
+    xsi:schemaLocation='http://www.datacopy.common/DataCopy datacopy.xsd
+    http://www.datacopy.common/extending/example extendingSchemaExample.xsd'>
+       
+           
+    <common>      
+        <anyCredentials id="cred1"/>
+        
+        <ext:sqlSelectSource id="sqlSelectSrc1">
+            <description><![CDATA[
+                The sqlSelectSource is a
+                ]]>
+            </description>
+            <ext:sql>select * from table where table.name = 'datacopy'</ext:sql>
+            <anyCredentials>
+                <idref local="cred1"/>
+            </anyCredentials>
+        </ext:sqlSelectSource>
+
+        
+        <urlDataSource id="urlsink1">
+            <description><![CDATA[
+                A common url data sink that can be referenced multiple times
+                from within copy elements using <idref local="urlsink1"/>]]>
+            </description>
+            <urlDataEndpoint>
+                <dataUrl url="http://sink.data.org"/>
+            </urlDataEndpoint>
+        </urlDataSource>
+
+        
+    </common>
+
+   
+
+
+    <copy>
+        <description>
+            A
+        </description>
+        <source>
+            <idref local="sqlSelectSrc1"/>
+        </source>
+        <sink>
+            <idref local="urlsink1"/>
+        </sink>
+    </copy>
+
+        
+    <copy>
+        <description>Copy results of sql statement in attachement to urlsink1</description>
+        <source>
+            <ext:sqlSelectSource>
+                <description><![CDATA[
+                The extending sqlSelectSource can also be defined inline
+                ]]>
+                </description>
+                <ext:sql>select * from table where table.name = 'datacopyinline'</ext:sql>
+                <anyCredentials>
+                    <idref local="cred1"/>
+                </anyCredentials>
+            </ext:sqlSelectSource>
+        </source>
+        <sink>
+            <idref local="urlsink1"/>
+        </sink>
+    </copy>
+
+
+</DataCopy>

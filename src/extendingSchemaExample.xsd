@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:dc="http://www.datacopy.common/DataCopy"
+    xmlns:ext="http://www.datacopy.common/extending/example"
+    xmlns="http://www.datacopy.common/extending/example"
+    targetNamespace="http://www.datacopy.common/extending/example">
+
+    <xs:import namespace="http://www.datacopy.common/DataCopy"
+        schemaLocation="datacopy.xsd"/> 
+    
+
+
+     
+    <xs:element name="ourSource" substitutionGroup="dc:abstractDataSource">
+        <!-- custom body here -->
+    </xs:element>
+    
+    <xs:element name="ourSink" substitutionGroup="dc:abstractDataSink">
+        <!-- custom body here -->
+    </xs:element>   
+    
+    
+    <xs:element name="ourProps" substitutionGroup="dc:abstractProperties"/>
+    <xs:element name="ourCredentials" substitutionGroup="dc:abstractCredentials"/>
+    
+    
+    <xs:element name="sqlSelectSource" substitutionGroup="dc:abstractDataSource">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="dc:abstractIdentifiedType">
+                    <xs:sequence>
+                        <xs:element ref="dc:description" minOccurs="0"/>
+                        <xs:element ref="ext:sql" minOccurs="0"/>
+                        <xs:choice minOccurs="0">
+                            <xs:element ref="dc:abstractCredentials"/>
+                            <xs:element ref="dc:idref" />
+                        </xs:choice>
+                    </xs:sequence>         
+                </xs:extension>
+            </xs:complexContent>      
+        </xs:complexType>    
+    </xs:element>
+    
+   <xs:element name="sql" type="xs:string"/>
+
+    
+</xs:schema>
+
